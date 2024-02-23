@@ -1,3 +1,4 @@
+# Estágio 1: Instalar e configurar a aplicação
 FROM node:20-buster as installer
 COPY . /juice-shop
 WORKDIR /juice-shop
@@ -28,6 +29,7 @@ RUN rm -rf node_modules/libxmljs2/build && \
   cd node_modules/libxmljs2 && \
   npm run build
 
+# Estágio 2: Configurar o NGINX e copiar a aplicação
 FROM gcr.io/distroless/nodejs20-debian11
 ARG BUILD_DATE
 ARG VCS_REF
@@ -46,6 +48,7 @@ LABEL maintainer="Bjoern Kimminich <bjoern.kimminich@owasp.org>" \
 WORKDIR /juice-shop
 COPY --from=installer --chown=65532:0 /juice-shop .
 COPY --chown=65532:0 --from=libxmljs-builder /juice-shop/node_modules/libxmljs2 ./node_modules/libxmljs2
+COPY nginx.conf /etc/nginx/nginx.conf
 USER 65532
-EXPOSE 3000
+EXPOSE 10503
 CMD ["/juice-shop/build/app.js"]
